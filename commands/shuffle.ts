@@ -9,6 +9,11 @@ const roleId = "1437642724164763678";
 export default new Command({
   data,
   async execute(interaction) {
+    if (interaction.user.id != "487597510559531009") {
+      await interaction.reply({ content: "bleh", ephemeral: true });
+      return;
+    }
+
     if (!interaction.channel?.isSendable()) {
       await interaction.reply({ content: "I can't send messages in this channel!", ephemeral: true });
       return;
