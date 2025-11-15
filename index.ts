@@ -7,9 +7,11 @@ import type { ChatInputCommandInteractionExtended } from "./commands/command";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY || "" });
 
-const jacob = new Jacob({ intents: [GatewayIntentBits.Guilds], ai });
+const jacob = new Jacob({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers], ai });
 
 const uploadCommands = Object.values(commands).map((command) => command.data);
+
+const guildId = "1287991366680313866";
 
 jacob.once(Events.ClientReady, async () => {
   console.log(`Logged in as ${jacob.user?.tag}`);
@@ -24,6 +26,17 @@ jacob.once(Events.ClientReady, async () => {
     console.log(`Uploaded ${uploadCommands.length} commands to Discord`);
   } catch (error) {
     console.error("Error uploading commands:", error);
+  }
+
+  try {
+    const guild = jacob.guilds.cache.get(guildId);
+    if (!guild) {
+      throw new Error("Guild not found");
+    }
+
+    await guild.members.fetch();
+  } catch (error) {
+    console.error("Error fetching guild members:", error);
   }
 });
 
