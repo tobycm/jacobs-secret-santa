@@ -1,33 +1,32 @@
-import { MessageFlags, SlashCommandBuilder } from "discord.js";
+import { bold, inlineCode, Message, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { pickRandom } from "../utils";
 import { Command } from "./command";
 
 const data = new SlashCommandBuilder().setName("shuffle").setDescription("Pick a roster of random gift recipients.");
+
+data.addBooleanOption((option) => option.setName("delete").setDescription("Whether to delete the messages after a delay").setRequired(false));
 
 const roleId = "1437642724164763678";
 
 export default new Command({
   data,
   async execute(interaction) {
-    if (interaction.user.id != "487597510559531009") {
-      await interaction.reply({ content: "bleh", ephemeral: true });
-      return;
-    }
-
-    if (!interaction.channel?.isSendable()) {
-      await interaction.reply({ content: "I can't send messages in this channel!", ephemeral: true });
+    if (!["487597510559531009", "1037524319259074690"].includes(interaction.user.id)) {
+      await interaction.reply({ content: "bleh", flags: [MessageFlags.Ephemeral] });
       return;
     }
 
     const members = interaction.guild?.roles.cache
       .get(roleId)
       ?.members.filter((member) => !member.user.bot)
-      .map((member) => member.user.username);
+      .map((member) => member.user);
 
     if (!members || members.length < 2) {
-      await interaction.reply({ content: "Not enough members with the specified role to shuffle.", ephemeral: true });
+      await interaction.reply({ content: "Not enough members with the specified role to shuffle.", flags: [MessageFlags.Ephemeral] });
       return;
     }
+
+    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
     // Shuffle the members array
     for (let i = members.length - 1; i > 0; i--) {
@@ -39,7 +38,7 @@ export default new Command({
     const givers = [...members];
     const receivers = [...members];
 
-    const pairs: string[] = [];
+    const messages: Message[] = [];
     for (let i = 0; i < givers.length; i++) {
       const giver = givers[i]!;
       let receiver = pickRandom(receivers);
@@ -49,7 +48,8 @@ export default new Command({
         receiver = pickRandom(receivers);
       }
 
-      pairs.push(`${giver} → ${receiver}`);
+      const message = await giver.send(`You have been assigned to give a gift to ${bold(inlineCode(receiver.username))}! 🎁`);
+      messages.push(message);
 
       // Remove the assigned receiver from the list
       const index = receivers.indexOf(receiver);
@@ -58,10 +58,15 @@ export default new Command({
       }
     }
 
-    await interaction.channel.send({
-      content: `Here are the shuffled gift recipients:\n${pairs.join("\n")}`,
-    });
+    await interaction.followUp({ content: "The gift recipients have been shuffled and sent to the channel!", flags: [MessageFlags.Ephemeral] });
 
-    await interaction.reply({ content: "The gift recipients have been shuffled and sent to the channel!", flags: [MessageFlags.Ephemeral] });
+    const deleteOption = interaction.options.getBoolean("delete");
+    if (!deleteOption) return;
+
+    await new Promise((resolve) => setTimeout(resolve, 20000));
+
+    for (const msg of messages) {
+      await msg.delete();
+    }
   },
 });
