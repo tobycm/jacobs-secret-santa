@@ -16,7 +16,7 @@ export default new Command({
       return;
     }
 
-    const messages = await interaction.channel.messages.fetch({ limit: 500 });
+    const messages = await interaction.channel.messages.fetch({ limit: 100 });
     const modrinthLinks = messages
       .filter((msg) => msg.content.includes("modrinth.com"))
       .map((msg) => msg.content.match(/https?:\/\/modrinth\.com\/[^\s]+/g))
