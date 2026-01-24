@@ -44,6 +44,12 @@ jacob.once(Events.ClientReady, async () => {
   } catch (error) {
     console.error("Error fetching guild members:", error);
   }
+
+  try {
+    await rcon.connect();
+  } catch (error) {
+    console.error("Error connecting to Rcon server:", error);
+  }
 });
 
 jacob.on(Events.InteractionCreate, async (interaction) => {
