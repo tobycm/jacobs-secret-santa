@@ -15,10 +15,19 @@ export default new Command({
       return;
     }
 
-    const result = await interaction.client.rcon.send(`whitelist add ${username}`);
+    await interaction.deferReply({ ephemeral: true });
+
+    let result: string;
+
+    try {
+      result = await interaction.client.rcon.send(`whitelist add ${username}`);
+    } catch (error) {
+      await interaction.followUp({ content: `Failed to connect to the Minecraft server. Please try again later. Error: ${error}`, ephemeral: true });
+      return;
+    }
 
     if (result.includes("is already whitelisted")) {
-      await interaction.reply({ content: `${username} is already whitelisted!`, ephemeral: true });
+      await interaction.followUp({ content: `${username} is already whitelisted!`, ephemeral: true });
       return;
     }
 
@@ -28,15 +37,15 @@ export default new Command({
         allowedMentions: { parse: ["users"] },
       });
 
-      await interaction.reply({ content: `${username} has been whitelisted!`, ephemeral: true });
+      await interaction.followUp({ content: `${username} has been whitelisted!`, ephemeral: true });
       return;
     }
 
     if (result.includes("does not exist")) {
-      await interaction.reply({ content: `No such player: ${username}`, ephemeral: true });
+      await interaction.followUp({ content: `No such player: ${username}`, ephemeral: true });
       return;
     }
 
-    await interaction.reply({ content: `An unknown error occurred while trying to whitelist the user. Error: ${result}`, ephemeral: true });
+    await interaction.followUp({ content: `An unknown error occurred while trying to whitelist the user. Error: ${result}`, ephemeral: true });
   },
 });
