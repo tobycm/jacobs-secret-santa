@@ -24,6 +24,14 @@ export default class CRcon extends Rcon {
     this.reconnectDelay = options.reconnectDelay ?? 10_000;
     this.maxReconnectAttempts = options.reconnectAttempts ?? 20;
 
+    this.on("connect", () => {
+      console.log("CRcon: Connected to Rcon server.");
+    });
+
+    this.on("authenticated", () => {
+      console.log("CRcon: Authenticated with Rcon server.");
+    });
+
     // Handle "Network Error" (Crash, Timeout, ECONNRESET)
     this.on("error", (err) => {
       console.error("CRcon Error:", err.message);
