@@ -1,13 +1,19 @@
 import { GoogleGenAI } from "@google/genai";
 
 import { Events, GatewayIntentBits } from "discord.js";
-import Jacob from "./Jacob";
 import commands from "./commands";
 import type { ChatInputCommandInteractionExtended } from "./commands/command";
+import CRcon from "./CRcon";
+import Jacob from "./Jacob";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY || "" });
+const rcon = new CRcon({
+  host: process.env.RCON_HOST || "localhost",
+  port: Number(process.env.RCON_PORT) || 25575,
+  password: process.env.RCON_PASSWORD || "",
+});
 
-const jacob = new Jacob({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers], ai });
+const jacob = new Jacob({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers], ai, rcon });
 
 const uploadCommands = Object.values(commands).map((command) => command.data);
 
